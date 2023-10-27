@@ -1,0 +1,105 @@
+import pandas as pd
+import numpy as np
+
+# Extract government spending data from the SAM.gov platform
+def extract_sam_gov_data():
+  url = "https://www.sam.gov/SAM/award/search/list?keywords=&sort=-modificationDate&isAscending=false&classificationCode=&inactive=false&searchWithin=active"
+  response = requests.get(url)
+  html_content = response.content
+
+  soup = BeautifulSoup(html_content, "html.parser")
+
+  # Extract the table containing government spending data
+  table = soup.find("table", class_="table table-striped")
+
+  # Create a Pandas DataFrame from the table data
+  df = pd.read_html(table)[0]
+
+  # Return the DataFrame
+  return df
+
+# Extract government spending data from the Open Tenders and TED EUropa platform
+def extract_open_tenders_and_ted_europa_data():
+  url = "https://www.opentenders.eu/en/ted/europa-eu/search/all"
+  response = requests.get(url)
+  html_content = response.content
+
+  soup = BeautifulSoup(html_content, "html.parser")
+
+  # Extract the table containing government spending data
+  table = soup.find("table", class_="table table-striped")
+
+  # Create a Pandas DataFrame from the table data
+  df = pd.read_html(table)[0]
+
+  # Return the DataFrame
+  return df
+
+# Extract government spending data from the E-procurement platform
+def extract_e_procurement_data():
+  url = "https://eprocurement.gov.in/eprocurement/app"
+  response = requests.get(url)
+  html_content = response.content
+
+  soup = BeautifulSoup(html_content, "html.parser")
+
+  # Extract the table containing government spending data
+  table = soup.find("table", class_="table table-striped")
+
+  # Create a Pandas DataFrame from the table data
+  df = pd.read_html(table)[0]
+
+  # Return the DataFrame
+  return df
+
+# Clean the government spending data
+def clean_government_spending_data(df):
+  # Remove any duplicate rows
+  df = df.drop_duplicates()
+
+  # Convert the "amount" column to a numeric type
+  df["amount"] = pd.to_numeric(df["amount"])
+
+  # Replace any missing values in the "amount" column with NaN
+  df["amount"].fillna(np.nan, inplace=True)
+
+  # Return the cleaned DataFrame
+  return df
+
+# Conduct a preliminary analysis of the government spending data
+def preliminary_analysis(df):
+  # Print the first few rows of the DataFrame
+  print(df.head())
+
+  # Print the data types of each column in the DataFrame
+  print(df.dtypes)
+
+  # Print the descriptive statistics of the DataFrame
+  print(df.describe())
+
+  # Plot the distribution of the "amount" column
+  df["amount"].hist()
+  plt.xlabel("Amount")
+  plt.ylabel("Frequency")
+  plt.title("Distribution of Government Spending")
+  plt.show()
+
+# Main function
+def main():
+  # Extract government spending data from all three platforms
+  sam_gov_df = extract_sam_gov_data()
+  open_tenders_and_ted_europa_df = extract_open_tenders_and_ted_europa_data()
+  e_procurement_df = extract_e_procurement_data()
+
+  # Merge the government spending data from all three platforms into a single DataFrame
+  df = pd.merge(sam_gov_df, open_tenders_and_ted_europa_df, how="outer")
+  df = pd.merge(df, e_procurement_df, how="outer")
+
+  # Clean the government spending data
+  df = clean_government_spending_data(df)
+
+  # Conduct a preliminary analysis of the government spending data
+  preliminary_analysis(df)
+
+if __name__ == "__main__":
+  main()
